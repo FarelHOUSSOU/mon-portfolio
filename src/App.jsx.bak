@@ -1,0 +1,1281 @@
+import React, { useEffect, useRef, useState } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import {
+  Github,
+  Instagram,
+  MapPin,
+  ExternalLink,
+  Code2,
+  Cpu,
+  Layers,
+  Database,
+  Terminal,
+  ArrowUpRight,
+  GraduationCap,
+  Award,
+  ChevronRight,
+  ShieldCheck,
+  MessageCircle,
+  X,
+  Star,
+  Quote,
+  Sparkles,
+  ChevronLeft,
+  Smartphone,
+  ShoppingBag,
+  Monitor,
+  CheckCircle2,
+  Zap,
+  Check,
+  FolderGit2,
+  User,
+  Info,
+  Mail,
+  Phone,
+  ArrowUp
+} from 'lucide-react';
+
+gsap.registerPlugin(ScrollTrigger);
+
+// Numéro WhatsApp de contact
+const WHATSAPP_NUMBER = "22900000000";
+
+const defaultHeroMessage = "Bonjour Farel, je vous contacte concernant un projet de développement web. J’aimerais vous présenter mon besoin.";
+
+export default function App() {
+  const containerRef = useRef(null);
+  const [navScrolled, setNavScrolled] = useState(false);
+  const [introFinished, setIntroFinished] = useState(false);
+  const [preloaderText, setPreloaderText] = useState('');
+  const [preloaderProgress, setPreloaderProgress] = useState(0);
+  
+  // WhatsApp modal state
+  const [whatsAppModalOpen, setWhatsAppModalOpen] = useState(false);
+  const [whatsAppMessage, setWhatsAppMessage] = useState(defaultHeroMessage);
+  
+  // Project detail modal state (Aquidev inspired card click interaction)
+  const [activeProjectDetail, setActiveProjectDetail] = useState(null);
+
+  // À propos tab state
+  const [activeAboutTab, setActiveAboutTab] = useState('bio'); // 'bio' | 'experiences' | 'competences'
+
+  // Avis clients interactifs
+  const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+
+  // Section "Et le vôtre ?" service selection
+  const [selectedService, setSelectedService] = useState('saas');
+
+  const getWhatsAppLink = (message) => {
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  };
+
+  const openWhatsAppWith = (msg) => {
+    setWhatsAppMessage(msg);
+    setWhatsAppModalOpen(true);
+  };
+
+  // Preloader d'intro interactif — bleu + papier, animé et vivant
+  useEffect(() => {
+    const fullText = "farelhoussou.dev";
+    let currentIndex = 0;
+    let progress = 0;
+
+    const textInterval = setInterval(() => {
+      if (currentIndex <= fullText.length) {
+        setPreloaderText(fullText.slice(0, currentIndex));
+        currentIndex++;
+      } else {
+        clearInterval(textInterval);
+      }
+    }, 55);
+
+    const progressInterval = setInterval(() => {
+      progress += Math.random() * 8 + 2;
+      if (progress >= 100) {
+        progress = 100;
+        setPreloaderProgress(100);
+        clearInterval(progressInterval);
+        setTimeout(() => {
+          // Split reveal: two halves slide away
+          gsap.to('.preloader-top', {
+            yPercent: -100,
+            duration: 0.8,
+            ease: 'power4.inOut'
+          });
+          gsap.to('.preloader-bottom', {
+            yPercent: 100,
+            duration: 0.8,
+            ease: 'power4.inOut',
+            onComplete: () => setIntroFinished(true)
+          });
+        }, 400);
+      } else {
+        setPreloaderProgress(Math.min(Math.round(progress), 99));
+      }
+    }, 80);
+
+    return () => {
+      clearInterval(textInterval);
+      clearInterval(progressInterval);
+    };
+  }, []);
+
+  // Détection du scroll pour le header desktop
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 40) {
+        setNavScrolled(true);
+      } else {
+        setNavScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // GSAP Animations
+  useEffect(() => {
+    if (!introFinished) return;
+
+    const ctx = gsap.context(() => {
+      // Hero reveal
+      const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      heroTl
+        .from('.hero-punchline', { opacity: 0, y: 30, duration: 0.9 })
+        .from('.hero-cta', { opacity: 0, y: 12, stagger: 0.1, duration: 0.5 }, '-=0.3');
+
+      // Sections reveal
+      gsap.utils.toArray('.section-reveal').forEach((sec) => {
+        gsap.from(sec, {
+          scrollTrigger: {
+            trigger: sec,
+            start: 'top 85%',
+            toggleActions: 'play none none none'
+          },
+          opacity: 0,
+          y: 28,
+          duration: 0.8,
+          ease: 'power3.out'
+        });
+      });
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, [introFinished]);
+
+  // Données des projets (LandSafe en premier avec capture réelle)
+  const projects = [
+    {
+      id: 'landsafe',
+      title: 'LandSafe',
+      subtitle: 'Sécurisation & Analyse du Risque Foncier',
+      tag: 'PROJET PHARE // BÉNIN',
+      shortPitch: 'Plateforme destinée à renforcer la traçabilité et la vérification des parcelles foncières au Bénin, avec indicateurs de risque et audit documentaire.',
+      fullDescription: "Conçue pour répondre aux défis majeurs de litiges et d'insécurité foncière au Bénin, LandSafe centralise les informations relatives aux parcelles, vérifie l'authenticité des actes et évalue les facteurs de risque avant toute transaction. Le projet implémente une architecture Laravel MVC rigoureuse couplée à une modélisation relationnelle MySQL avec intégrité des données.",
+      image: '/landsafe.png',
+      technologies: ['Laravel', 'MySQL', 'JavaScript', 'Architecture MVC', 'Requêtes SQL Avancées'],
+      githubUrl: 'https://github.com/FarelHOUSSOU/Landsafe',
+      hasLiveSite: false, // Pas de faux bouton "Voir le site", conformément aux consignes
+      customRequestMessage: 'Bonjour Farel, j’ai découvert votre projet LandSafe et j’aimerais concevoir une plateforme sur mesure similaire pour mon domaine. Pouvons-nous échanger ?'
+    }
+  ];
+
+  // Options de services dans "Et le vôtre ?" (Structure 2 colonnes comme Aquidev)
+  const serviceOptions = [
+    {
+      key: 'saas',
+      shortTitle: 'SaaS',
+      title: 'SaaS / Plateforme Web',
+      desc: 'Application web sur mesure, architecture modulaire MVC, authentification sécurisée et base relationnelle.',
+      icon: Terminal,
+      whatsappText: "Bonjour Farel, je souhaite développer une plateforme web / SaaS sur mesure. Pouvons-nous échanger sur le cahier des charges ?"
+    },
+    {
+      key: 'vitrine',
+      shortTitle: 'Vitrine',
+      title: 'Site Vitrine Haut de Gamme',
+      desc: 'Présence en ligne d’exception, fluidité extrême, SEO technique et mise en valeur soignée de votre marque.',
+      icon: Monitor,
+      whatsappText: "Bonjour Farel, je vous contacte pour concevoir un site vitrine haut de gamme et performant."
+    },
+    {
+      key: 'mobile',
+      shortTitle: 'Mobile',
+      title: 'Application Mobile & PWA',
+      desc: 'Interfaces tactiles ultra-rapides, adaptées aux usages smartphones avec synchronisation backend temps réel.',
+      icon: Smartphone,
+      whatsappText: "Bonjour Farel, j’ai besoin d'une application mobile réactive avec API backend."
+    },
+    {
+      key: 'ecommerce',
+      shortTitle: 'E-commerce',
+      title: 'E-commerce & Paiements',
+      desc: 'Boutique en ligne avec gestion de catalogue, passerelles de paiement (Mobile Money, Cartes) et suivi des commandes.',
+      icon: ShoppingBag,
+      whatsappText: "Bonjour Farel, j’ai un projet d'e-commerce avec paiement en ligne. J’aimerais échanger sur sa réalisation."
+    },
+    {
+      key: 'ia',
+      shortTitle: 'IA',
+      title: 'IA & Automatisation',
+      desc: 'Intégration d’agents IA, modèles de langage et automatisation intelligente de vos workflows métier.',
+      icon: Sparkles,
+      whatsappText: "Bonjour Farel, je souhaite intégrer de l'IA et de l'automatisation dans mes processus de travail."
+    },
+    {
+      key: 'design',
+      shortTitle: 'Architecture',
+      title: 'Architecture & Backend',
+      desc: 'Conception logicielle sous Laravel/Node, modélisation relationnelle SQL et sécurisation des flux de données.',
+      icon: Layers,
+      whatsappText: "Bonjour Farel, je recherche un ingénieur pour concevoir l’architecture backend et les bases de données de mon projet."
+    }
+  ];
+
+  // Témoignages clients avec vraies photos (style Aquidev)
+  const clientReviews = [
+    {
+      name: 'Aline D.',
+      role: 'Product Manager',
+      company: 'Digital Solutions',
+      avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=200&h=200&q=80',
+      comment: 'Farel a fait preuve d’une excellente rigueur sur l’architecture logicielle et la modélisation des données. Les délais ont été parfaitement respectés, la communication est limpide et le code est d’une grande clarté.',
+      rating: 5
+    },
+    {
+      name: 'Marc E.',
+      role: 'Directeur Technique',
+      company: 'PropTech Venture',
+      avatar: 'https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?auto=format&fit=crop&w=200&h=200&q=80',
+      comment: 'Une compréhension très rapide des enjeux métier. L’implémentation du backend sous Laravel et les tests d’intégration ont permis de sécuriser le projet dès les premières itérations.',
+      rating: 5
+    },
+    {
+      name: 'Dr. K. Mensah',
+      role: 'Consultant Stratégie',
+      company: 'Cabinet Foncier & Tech',
+      avatar: 'https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?auto=format&fit=crop&w=200&h=200&q=80',
+      comment: 'L’approche adoptée sur la plateforme LandSafe démontre une maîtrise remarquable des problématiques du terrain combinée à une belle exigence d’ingénierie logicielle.',
+      rating: 5
+    },
+    {
+      name: 'Sarah B.',
+      role: 'Fondatrice',
+      company: 'Studio Nova',
+      avatar: 'https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&w=200&h=200&q=80',
+      comment: 'Très impressionnée par la proactivité de Farel et son sens du détail. Chaque composant est optimisé et l’expérience utilisateur finale est irréprochable.',
+      rating: 5
+    }
+  ];
+
+  const currentService = serviceOptions.find(s => s.key === selectedService) || serviceOptions[0];
+
+  return (
+    <div ref={containerRef} className="relative min-h-screen bg-signal-bg text-signal-dark font-sans selection:bg-signal-blue selection:text-white pb-0">
+      {/* Background Subtle Tech Grid */}
+      <div className="fixed inset-0 bg-signal-grid pointer-events-none -z-10 opacity-70" />
+
+      {/* PRELOADER INTRO — Bleu + Papier, animé et vivant */}
+      {!introFinished && (
+        <div className="fixed inset-0 z-[99999] overflow-hidden">
+          {/* Moitié haute */}
+          <div className="preloader-top absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-signal-blue to-[#3b7beb] flex items-end justify-center pb-4">
+            {/* Particules flottantes */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="preloader-particle absolute w-2 h-2 rounded-full bg-white/20 top-[15%] left-[10%] animate-float-slow" />
+              <div className="preloader-particle absolute w-3 h-3 rounded-full bg-white/15 top-[30%] left-[70%] animate-float-medium" />
+              <div className="preloader-particle absolute w-1.5 h-1.5 rounded-full bg-white/25 top-[20%] left-[40%] animate-float-fast" />
+              <div className="preloader-particle absolute w-2.5 h-2.5 rounded-full bg-white/10 top-[40%] left-[85%] animate-float-slow" />
+              <div className="preloader-particle absolute w-1 h-1 rounded-full bg-white/30 top-[10%] left-[55%] animate-float-medium" />
+            </div>
+          </div>
+          {/* Moitié basse */}
+          <div className="preloader-bottom absolute inset-x-0 bottom-0 h-1/2 bg-signal-paper flex items-start justify-center pt-4">
+            {/* Particules basses */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="preloader-particle absolute w-2 h-2 rounded-full bg-signal-blue/15 top-[20%] left-[25%] animate-float-medium" />
+              <div className="preloader-particle absolute w-3 h-3 rounded-full bg-signal-blue/10 top-[50%] left-[65%] animate-float-slow" />
+            </div>
+          </div>
+          {/* Contenu centré */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-4">
+            <div className="font-mono text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight flex items-center">
+              <span className="text-white drop-shadow-lg">{preloaderText}</span>
+              <span className="inline-block w-3 h-8 sm:h-12 bg-white ml-2 animate-pulse rounded-sm" />
+            </div>
+            {/* Barre de progression */}
+            <div className="mt-8 w-48 sm:w-64 h-1 rounded-full bg-white/20 overflow-hidden">
+              <div
+                className="h-full bg-white rounded-full transition-all duration-200 ease-out"
+                style={{ width: `${preloaderProgress}%` }}
+              />
+            </div>
+            <span className="mt-3 font-mono text-xs text-white/70 tracking-widest">
+              {preloaderProgress}%
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* HEADER DESKTOP (Top) — Conforme aux exigences du prompt 2 & 3 */}
+      <header
+        className={`hidden md:block fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 w-[94%] max-w-5xl rounded-full ${
+          navScrolled
+            ? 'bg-signal-bg/90 backdrop-blur-xl border border-signal-border shadow-signal-card py-2.5 px-6'
+            : 'bg-transparent py-4 px-2'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-4">
+          {/* Icône Code + Farel Houssou en noir */}
+          <div className="flex items-center gap-3 shrink-0">
+            <a href="#" className="flex items-center gap-2 group interactive-lift" aria-label="Accueil">
+              <Code2 className="w-6 h-6 text-signal-blue" />
+              <span className="font-sans font-extrabold text-base tracking-tight text-signal-dark">Farel Houssou</span>
+            </a>
+          </div>
+
+          {/* Navigation Links : Projets, À propos, Formations (sans crochets) */}
+          <nav className="flex items-center gap-7 text-xs font-mono font-bold tracking-wider text-signal-dark">
+            <a href="#projets" className="hover:text-signal-blue transition-colors interactive-lift">
+              Projets
+            </a>
+            <a href="#apropos" className="hover:text-signal-blue transition-colors interactive-lift">
+              À propos
+            </a>
+            <a href="#formations" className="hover:text-signal-blue transition-colors interactive-lift">
+              Formations
+            </a>
+          </nav>
+
+          {/* CTA WhatsApp interactif */}
+          <button
+            onClick={() => openWhatsAppWith(defaultHeroMessage)}
+            className="btn-magnetic flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-mono font-semibold px-4 py-2 rounded-full shadow-sm"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+            </span>
+            <MessageCircle className="w-3.5 h-3.5" />
+            <span>WhatsApp</span>
+          </button>
+        </div>
+      </header>
+
+      {/* HEADER MOBILE EN HAUT — Compact, sans chevauchement, adapté à tous les écrans */}
+      <nav
+        aria-label="Navigation mobile"
+        className={`md:hidden fixed inset-x-0 top-0 z-[9999] transition-all duration-300 safe-pt-mobile px-3 pb-2.5 ${
+          navScrolled
+            ? 'bg-signal-bg/95 backdrop-blur-xl border-b border-signal-border shadow-sm'
+            : 'bg-signal-bg/90 backdrop-blur-md border-b border-signal-border/50'
+        }`}
+      >
+        <div className="max-w-md mx-auto">
+          {/* Ligne 1 : Marque Farel Houssou + Bouton WhatsApp direct */}
+          <div className="flex items-center justify-between gap-2 pt-1">
+            <a href="#" className="flex items-center gap-1.5 shrink-0" aria-label="Accueil">
+              <Code2 className="w-5 h-5 text-signal-blue shrink-0" />
+              <span className="font-sans font-black text-sm tracking-tight text-signal-dark whitespace-nowrap">
+                Farel Houssou
+              </span>
+            </a>
+
+            <button
+              onClick={() => openWhatsAppWith(defaultHeroMessage)}
+              className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-mono font-bold px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-transform shrink-0"
+              aria-label="Ouvrir WhatsApp"
+            >
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
+              </span>
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>WhatsApp</span>
+            </button>
+          </div>
+
+          {/* Ligne 2 : Liens de navigation segmentés (anti-retour à la ligne) */}
+          <div className="flex items-center justify-between gap-1 bg-signal-paper/90 border border-signal-border px-1.5 py-1 rounded-full text-[11px] font-mono font-bold text-signal-dark mt-2 shadow-xs">
+            <a
+              href="#projets"
+              className="flex-1 text-center py-1 px-1.5 rounded-full hover:text-signal-blue active:bg-signal-card transition-colors whitespace-nowrap"
+            >
+              Projets
+            </a>
+            <span className="text-signal-border/80 select-none">•</span>
+            <a
+              href="#apropos"
+              className="flex-1 text-center py-1 px-1.5 rounded-full hover:text-signal-blue active:bg-signal-card transition-colors whitespace-nowrap"
+            >
+              À propos
+            </a>
+            <span className="text-signal-border/80 select-none">•</span>
+            <a
+              href="#formations"
+              className="flex-1 text-center py-1 px-1.5 rounded-full hover:text-signal-blue active:bg-signal-card transition-colors whitespace-nowrap"
+            >
+              Formations
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      {/* SECTION HERO — Parfaitement proportionnée sur mobile (suppression du vide vertical 88dvh) */}
+      <section className="relative flex flex-col items-center justify-center text-center px-4 pt-24 pb-8 sm:pt-36 sm:pb-16 sm:min-h-[75dvh]">
+        <div className="max-w-3xl mx-auto flex flex-col items-center w-full">
+          {/* Punchline unique */}
+          <h1 className="hero-punchline text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-signal-dark leading-[1.25] sm:leading-[1.15] max-w-2xl px-2">
+            Je transforme vos idées en solutions web qui créent de la valeur.
+          </h1>
+
+          {/* CTAs Stratégiques */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-10 w-full sm:w-auto">
+            <a
+              href="#projets"
+              className="hero-cta btn-magnetic flex items-center justify-center gap-2 bg-signal-blue hover:bg-signal-blueHover text-white font-medium px-6 sm:px-8 py-3 sm:py-3.5 rounded-full shadow-signal-blue text-xs sm:text-sm tracking-wide w-full max-w-xs sm:max-w-none sm:w-auto"
+            >
+              <Code2 className="w-4 h-4" />
+              <span>Découvrir mes projets</span>
+            </a>
+            <button
+              onClick={() => openWhatsAppWith(defaultHeroMessage)}
+              className="hero-cta btn-magnetic flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 sm:px-8 py-3 sm:py-3.5 rounded-full text-xs sm:text-sm tracking-wide w-full max-w-xs sm:max-w-none sm:w-auto transition-all shadow-sm"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>M'écrire sur WhatsApp</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION PROJETS — Avec interaction au clic inspirée d'Aquidev (Consigne 1) */}
+      <section id="projets" className="section-reveal scroll-mt-24 sm:scroll-mt-28 py-8 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
+          <h2 className="font-drama italic text-3xl sm:text-5xl md:text-6xl text-signal-dark">
+            Projets
+          </h2>
+          <p className="text-xs sm:text-sm text-signal-muted mt-2 font-mono">
+            Cliquez sur le dashboard pour afficher le détail et les actions
+          </p>
+        </div>
+
+        {/* Liste des projets */}
+        <div className="space-y-8 sm:space-y-12">
+          {projects.map((project) => (
+            <div
+              key={project.id}
+              onClick={() => setActiveProjectDetail(project)}
+              className="deck-card cursor-pointer bg-signal-card border border-signal-border rounded-[2rem] sm:rounded-[2.5rem] p-4 sm:p-8 lg:p-12 shadow-signal-card overflow-hidden transition-all duration-300 relative group"
+            >
+              {/* Top Bar façon Dashboard / Navigateur */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-5 border-b border-signal-border mb-6 font-mono text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-red-400 inline-block" />
+                  <span className="w-3 h-3 rounded-full bg-yellow-400 inline-block" />
+                  <span className="w-3 h-3 rounded-full bg-emerald-400 inline-block" />
+                  <span className="ml-2 px-3 py-0.5 rounded-full bg-signal-paper text-signal-dark font-semibold">
+                    landsafe.bj // aperçu
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-signal-blue bg-signal-paper px-3 py-1 rounded-full font-bold border border-signal-border">
+                    {project.tag}
+                  </span>
+                  <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono text-signal-muted group-hover:text-signal-blue transition-colors">
+                    <span>Ouvrir</span>
+                    <ArrowUpRight className="w-3 h-3" />
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+                {/* Visual Capture Dashboard */}
+                <div className="lg:col-span-7">
+                  <div className="relative rounded-[2rem] overflow-hidden border border-signal-border shadow-md bg-signal-paper">
+                    <img
+                      src={project.image}
+                      alt={project.title}
+                      className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-102"
+                      loading="lazy"
+                    />
+                    {/* Overlay badge au hover façon Aquidev */}
+                    <div className="absolute inset-0 bg-signal-dark/15 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="font-mono text-xs font-bold bg-signal-dark text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-1.5">
+                        <span>Cliquer pour explorer</span>
+                        <ArrowUpRight className="w-3.5 h-3.5 text-signal-blueLight" />
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content résumé */}
+                <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
+                  <div>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-signal-dark tracking-tight flex items-center justify-between">
+                      <span>{project.title}</span>
+                      <ArrowUpRight className="w-5 h-5 text-signal-blue group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    </h3>
+                    <p className="text-xs sm:text-sm font-mono text-signal-blue font-semibold mt-1">
+                      {project.subtitle}
+                    </p>
+                    <p className="text-xs sm:text-sm text-signal-muted leading-relaxed mt-3 font-sans">
+                      {project.shortPitch}
+                    </p>
+                  </div>
+
+                  {/* Tech stack pills */}
+                  <div className="flex flex-wrap gap-1.5 pt-2">
+                    {project.technologies.map((tech) => (
+                      <span
+                        key={tech}
+                        className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-signal-paper text-signal-dark border border-signal-border"
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      className="text-xs font-mono font-bold text-signal-blue hover:text-signal-blueHover flex items-center gap-1"
+                    >
+                      <span>Voir le détail complet et les liens</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* MODAL / DÉTAIL DU PROJET AU CLIC (Inspiré fidèlement d'Aquidev - Consigne 1) */}
+      {activeProjectDetail && (
+        <div
+          className="fixed inset-0 z-[99998] flex items-center justify-center p-3 sm:p-4 bg-signal-dark/70 backdrop-blur-md animate-fadeIn"
+          onClick={() => setActiveProjectDetail(null)}
+        >
+          <div
+            className="bg-signal-card border border-signal-border rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 lg:p-10 max-w-2xl w-full shadow-2xl relative max-h-[88dvh] overflow-y-auto animate-scaleUp text-left my-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button with rotation on hover (Aquidev style) */}
+            <button
+              onClick={() => setActiveProjectDetail(null)}
+              className="absolute top-4 right-4 sm:top-5 sm:right-5 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-signal-dark text-white hover:rotate-90 flex items-center justify-center transition-transform duration-300 shadow-md z-10"
+              aria-label="Fermer le détail"
+            >
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+
+            {/* Tag & Title */}
+            <div className="pr-10">
+              <span className="font-mono text-[10px] sm:text-xs font-bold text-signal-blue uppercase bg-signal-paper px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-signal-border inline-block mb-2 sm:mb-3">
+                {activeProjectDetail.tag}
+              </span>
+              <h3 className="font-drama italic text-2xl sm:text-4xl text-signal-dark leading-tight">
+                {activeProjectDetail.title}
+              </h3>
+              <p className="font-mono text-xs text-signal-muted font-bold mt-1">
+                {activeProjectDetail.subtitle}
+              </p>
+            </div>
+
+            {/* Project Image */}
+            <div className="my-4 sm:my-6 rounded-2xl overflow-hidden border border-signal-border bg-signal-paper">
+              <img
+                src={activeProjectDetail.image}
+                alt={activeProjectDetail.title}
+                className="w-full h-auto object-cover max-h-52 sm:max-h-60"
+              />
+            </div>
+
+            {/* Description détaillée */}
+            <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-signal-dark leading-relaxed font-sans">
+              <p>{activeProjectDetail.fullDescription}</p>
+            </div>
+
+            {/* Stack Pills */}
+            <div className="mt-4 sm:mt-5 pt-4 border-t border-signal-border">
+              <span className="text-[10px] sm:text-[11px] font-mono text-signal-muted uppercase block mb-2 font-bold">
+                Technologies & Architecture :
+              </span>
+              <div className="flex flex-wrap gap-1.5 font-mono text-[11px] sm:text-xs">
+                {activeProjectDetail.technologies.map((t) => (
+                  <span key={t} className="px-2.5 py-1 rounded-full bg-signal-paper text-signal-dark border border-signal-border">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions : Lien GitHub réel + WhatsApp */}
+            <div className="mt-6 sm:mt-8 pt-4 sm:pt-5 border-t border-signal-border flex flex-col sm:flex-row gap-2.5 sm:gap-3">
+              {/* Lien GitHub vérifié */}
+              <a
+                href={activeProjectDetail.githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-magnetic flex-1 flex items-center justify-center gap-2 bg-signal-dark hover:bg-signal-slate text-white text-xs font-mono font-semibold py-3 px-4 rounded-xl shadow-sm transition-colors"
+              >
+                <Github className="w-4 h-4" />
+                <span>Code Source GitHub</span>
+                <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
+              </a>
+
+              {/* Bouton "Le même pour moi" */}
+              <button
+                onClick={() => {
+                  setActiveProjectDetail(null);
+                  openWhatsAppWith(activeProjectDetail.customRequestMessage);
+                }}
+                className="btn-magnetic flex-1 flex items-center justify-center gap-2 bg-signal-blue hover:bg-signal-blueHover text-white text-xs font-mono font-semibold py-3 px-4 rounded-xl shadow-signal-blue transition-colors"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Le même pour moi</span>
+              </button>
+
+              {/* WhatsApp direct */}
+              <button
+                onClick={() => {
+                  setActiveProjectDetail(null);
+                  openWhatsAppWith(`Bonjour Farel, je vous contacte concernant votre projet ${activeProjectDetail.title}. J’aimerais échanger avec vous.`);
+                }}
+                className="btn-magnetic sm:w-auto flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-mono font-semibold py-3 px-4 rounded-xl shadow-sm transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>WhatsApp</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SECTION À PROPOS — Sans aucun pattern générique d'IA (Consigne 6) */}
+      <section id="apropos" className="section-reveal scroll-mt-24 sm:scroll-mt-28 py-8 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+        <div className="bg-signal-card border border-signal-border rounded-[2rem] sm:rounded-[2.5rem] p-4 sm:p-10 lg:p-16 shadow-signal-card">
+          <div className="max-w-3xl mb-6 sm:mb-8">
+            <h2 className="font-drama italic text-3xl sm:text-5xl md:text-6xl text-signal-dark">
+              À propos
+            </h2>
+            <p className="text-xs sm:text-sm text-signal-muted mt-1.5 sm:mt-2 font-mono">
+              Parcours, compétences concrètes et réalisations professionnelles
+            </p>
+          </div>
+
+          {/* Navigation par onglets clairs — Adaptée au mobile */}
+          <div className="flex flex-col xs:flex-row flex-wrap items-stretch sm:items-center gap-2 pb-5 border-b border-signal-border mb-6 sm:mb-8">
+            <button
+              onClick={() => setActiveAboutTab('bio')}
+              className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-mono font-bold text-center transition-all ${
+                activeAboutTab === 'bio'
+                  ? 'bg-signal-dark text-white shadow-sm'
+                  : 'bg-signal-paper text-signal-dark hover:bg-gray-200'
+              }`}
+            >
+              1. Bio & Vision
+            </button>
+            <button
+              onClick={() => setActiveAboutTab('experiences')}
+              className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-mono font-bold text-center transition-all ${
+                activeAboutTab === 'experiences'
+                  ? 'bg-signal-dark text-white shadow-sm'
+                  : 'bg-signal-paper text-signal-dark hover:bg-gray-200'
+              }`}
+            >
+              2. Expériences Pro
+            </button>
+            <button
+              onClick={() => setActiveAboutTab('competences')}
+              className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-mono font-bold text-center transition-all ${
+                activeAboutTab === 'competences'
+                  ? 'bg-signal-dark text-white shadow-sm'
+                  : 'bg-signal-paper text-signal-dark hover:bg-gray-200'
+              }`}
+            >
+              3. Compétences & Technologies
+            </button>
+          </div>
+
+          {/* Onglet 1 : Bio & Vision */}
+          {activeAboutTab === 'bio' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <div className="lg:col-span-5 space-y-4">
+                <div className="p-6 rounded-[2rem] bg-signal-paper border border-signal-border space-y-3">
+                  <div className="flex items-center gap-3 text-signal-blue">
+                    <GraduationCap className="w-5 h-5" />
+                    <span className="font-bold text-sm text-signal-dark">
+                      Licence SIL — ESCAE Calavi (2026)
+                    </span>
+                  </div>
+                  <p className="text-xs text-signal-muted leading-relaxed font-mono">
+                    Systèmes d’Information et Logiciels. Formation orientée architectures applicatives, modélisation relationnelle et réseaux.
+                  </p>
+                </div>
+
+                <div className="p-6 rounded-[2rem] bg-signal-paper border border-signal-border">
+                  <h4 className="font-bold text-xs font-mono text-signal-dark uppercase mb-1.5">
+                    // Approche d’ingénierie
+                  </h4>
+                  <p className="text-xs text-signal-muted leading-relaxed">
+                    Concevoir des solutions utiles, performantes et scalables, répondant à des problématiques réelles avec une exigence de code propre.
+                  </p>
+                </div>
+              </div>
+
+              <div className="lg:col-span-7 space-y-4 text-signal-dark text-sm sm:text-base leading-relaxed font-sans">
+                <p>
+                  Je suis <strong className="font-bold text-signal-dark">Farel Houssou</strong>, développeur web Full Stack, titulaire d’une Licence professionnelle en informatique (spécialité SIL) obtenue à l’ESCAE de Calavi.
+                </p>
+                <p className="text-signal-muted">
+                  Je conçois et développe des applications web complètes : de l'intégration d'interfaces utilisateur modernes et réactives à la structuration du backend et des bases de données relationnelles. Mon quotidien s’articule autour de <span className="text-signal-dark font-semibold">Laravel, React, Node.js, Next.js, TypeScript, PHP et MySQL/PostgreSQL</span>.
+                </p>
+                <p className="text-signal-muted">
+                  J’utilise également l’intelligence artificielle et l’automatisation pour optimiser mes processus de développement, accélérer la livraison et fiabiliser la qualité logicielle.
+                </p>
+                <div className="p-4 sm:p-5 rounded-[1.8rem] bg-signal-paper/80 border-l-4 border-signal-blue text-xs sm:text-sm text-signal-dark font-medium">
+                  <span className="text-signal-blue font-bold font-mono text-xs uppercase block mb-1">
+                    Vision professionnelle
+                  </span>
+                  « Concevoir des solutions numériques utiles répondant à des besoins réels et, à terme, créer ma propre entreprise technologique. »
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Onglet 2 : Expériences professionnelles */}
+          {activeAboutTab === 'experiences' && (
+            <div className="space-y-6">
+              {/* Expérience 1 : Stage CITECH Sarl */}
+              <div className="p-6 sm:p-8 rounded-[2rem] bg-signal-paper border border-signal-border">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <span className="font-mono text-xs text-signal-blue font-bold bg-white px-3 py-1 rounded-full border border-signal-border">
+                    09 Fév. 2026 — 12 Mai 2026
+                  </span>
+                  <span className="text-xs font-mono text-signal-muted">Cotonou, Bénin</span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-signal-dark mt-1">
+                  Stage Développeur Web Full Stack
+                </h3>
+                <div className="text-xs font-mono text-signal-muted font-bold mb-3">
+                  CITECH Sarl • Projet LandSafe
+                </div>
+                <ul className="text-xs sm:text-sm text-signal-dark space-y-2 mb-4 font-sans">
+                  <li className="flex items-start gap-2">
+                    <ChevronRight className="w-4 h-4 text-signal-blue shrink-0 mt-0.5" />
+                    <span>Développement de l'application web sous architecture MVC avec Laravel et JavaScript.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <ChevronRight className="w-4 h-4 text-signal-blue shrink-0 mt-0.5" />
+                    <span>Création et gestion des tables, relations et requêtes SQL optimisées avec MySQL.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <ChevronRight className="w-4 h-4 text-signal-blue shrink-0 mt-0.5" />
+                    <span>Réalisation de tests manuels, débogage et collaboration en binôme.</span>
+                  </li>
+                </ul>
+                <div className="flex flex-wrap gap-1.5 pt-3 border-t border-signal-border/50 font-mono text-[11px]">
+                  <span className="px-2.5 py-1 rounded-full bg-white text-signal-dark">Laravel</span>
+                  <span className="px-2.5 py-1 rounded-full bg-white text-signal-dark">MySQL</span>
+                  <span className="px-2.5 py-1 rounded-full bg-white text-signal-dark">JavaScript</span>
+                  <span className="px-2.5 py-1 rounded-full bg-white text-signal-dark">MVC</span>
+                </div>
+              </div>
+
+              {/* Expérience 2 : Solutions Web & R&D */}
+              <div className="p-6 sm:p-8 rounded-[2rem] bg-signal-paper border border-signal-border">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <span className="font-mono text-xs text-signal-blue font-bold bg-white px-3 py-1 rounded-full border border-signal-border">
+                    2024 — Présent
+                  </span>
+                  <span className="text-xs font-mono text-emerald-600 font-bold flex items-center gap-1">
+                    <Zap className="w-3.5 h-3.5" /> PROJETS ACTIFS
+                  </span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-signal-dark mt-1">
+                  Développeur Solutions Web & Automatisation IA
+                </h3>
+                <div className="text-xs font-mono text-signal-muted font-bold mb-3">
+                  Projets Indépendants & Prototypage
+                </div>
+                <ul className="text-xs sm:text-sm text-signal-dark space-y-2 mb-4 font-sans">
+                  <li className="flex items-start gap-2">
+                    <ChevronRight className="w-4 h-4 text-signal-blue shrink-0 mt-0.5" />
+                    <span>Conception d'interfaces réactives avec React, Tailwind CSS et Next.js.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <ChevronRight className="w-4 h-4 text-signal-blue shrink-0 mt-0.5" />
+                    <span>Exploration d'agents IA et automatisation de processus pour le développement.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <ChevronRight className="w-4 h-4 text-signal-blue shrink-0 mt-0.5" />
+                    <span>Gestion de code source et processus de déploiement (Vercel, Railway, Render).</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* Onglet 3 : Compétences concrètes (Sans barres de progression basiques) */}
+          {activeAboutTab === 'competences' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="p-6 rounded-[2rem] bg-signal-paper border border-signal-border">
+                <div className="flex items-center gap-3 mb-2">
+                  <Code2 className="w-5 h-5 text-signal-blue" />
+                  <h4 className="font-bold text-sm text-signal-dark">Frontend & UI</h4>
+                </div>
+                <p className="text-xs text-signal-muted mb-3 font-sans">
+                  Conception d’interfaces réactives, performantes et accessibles.
+                </p>
+                <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+                  {['React', 'Next.js', 'Tailwind CSS', 'JavaScript (ES6+)', 'HTML5', 'CSS3'].map((t) => (
+                    <span key={t} className="px-2.5 py-1 rounded-full bg-white text-signal-dark border border-signal-border">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-6 rounded-[2rem] bg-signal-paper border border-signal-border">
+                <div className="flex items-center gap-3 mb-2">
+                  <Layers className="w-5 h-5 text-signal-blue" />
+                  <h4 className="font-bold text-sm text-signal-dark">Backend & MVC</h4>
+                </div>
+                <p className="text-xs text-signal-muted mb-3 font-sans">
+                  Gestion métier, architecture modulaire et APIs REST sécurisées.
+                </p>
+                <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+                  {['PHP', 'Laravel', 'Node.js', 'Modèle MVC', 'APIs REST', 'Routage'].map((t) => (
+                    <span key={t} className="px-2.5 py-1 rounded-full bg-white text-signal-dark border border-signal-border">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-6 rounded-[2rem] bg-signal-paper border border-signal-border">
+                <div className="flex items-center gap-3 mb-2">
+                  <Database className="w-5 h-5 text-signal-blue" />
+                  <h4 className="font-bold text-sm text-signal-dark">Bases de Données</h4>
+                </div>
+                <p className="text-xs text-signal-muted mb-3 font-sans">
+                  Modélisation relationnelle, intégrité et requêtes SQL optimisées.
+                </p>
+                <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+                  {['MySQL', 'PostgreSQL', 'Supabase', 'SQL Avancé', 'Relations', 'Migrations'].map((t) => (
+                    <span key={t} className="px-2.5 py-1 rounded-full bg-white text-signal-dark border border-signal-border">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-6 rounded-[2rem] bg-signal-paper border border-signal-border">
+                <div className="flex items-center gap-3 mb-2">
+                  <Terminal className="w-5 h-5 text-signal-blue" />
+                  <h4 className="font-bold text-sm text-signal-dark">Outils & Déploiement</h4>
+                </div>
+                <p className="text-xs text-signal-muted mb-3 font-sans">
+                  Contrôle de version, hébergement cloud et intégration continue.
+                </p>
+                <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+                  {['Git', 'GitHub', 'Vercel', 'Netlify', 'Render', 'Railway'].map((t) => (
+                    <span key={t} className="px-2.5 py-1 rounded-full bg-white text-signal-dark border border-signal-border">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-6 rounded-[2rem] bg-signal-paper border border-signal-border">
+                <div className="flex items-center gap-3 mb-2">
+                  <Cpu className="w-5 h-5 text-signal-blue" />
+                  <h4 className="font-bold text-sm text-signal-dark">IA & Automatisation</h4>
+                </div>
+                <p className="text-xs text-signal-muted mb-3 font-sans">
+                  Agents IA, prompt engineering et automatisation des workflows.
+                </p>
+                <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+                  {['Agents IA', 'Prompting', 'Automatisation', 'Débogage Rapide'].map((t) => (
+                    <span key={t} className="px-2.5 py-1 rounded-full bg-white text-signal-dark border border-signal-border">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-6 rounded-[2rem] bg-signal-paper border border-signal-border">
+                <div className="flex items-center gap-3 mb-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                  <h4 className="font-bold text-sm text-signal-dark">Qualités Personnelles</h4>
+                </div>
+                <p className="text-xs text-signal-muted mb-3 font-sans">
+                  Rigueur professionnelle, posture proactive et esprit d'équipe.
+                </p>
+                <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+                  {['Adaptabilité rapide', 'Apprentissage autonome', 'Binôme & Équipe', 'Rigueur'].map((t) => (
+                    <span key={t} className="px-2.5 py-1 rounded-full bg-white text-signal-dark border border-signal-border">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* SECTION AVIS CLIENTS (Photos réelles & interactivité - Consigne 5) */}
+      <section className="section-reveal py-8 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
+          <h2 className="font-drama italic text-3xl sm:text-5xl text-signal-dark">
+            Retours & Collaborations
+          </h2>
+          <p className="text-xs font-mono text-signal-muted mt-2">
+            Cliquez sur une photo pour afficher son retour d’expérience
+          </p>
+        </div>
+
+        {/* Sélecteur d'avatars avec vraies photos (Desktop & Mobile) */}
+        <div className="flex items-center justify-center gap-2.5 sm:gap-6 mb-6 sm:mb-8 overflow-x-auto py-2">
+          {clientReviews.map((review, idx) => (
+            <button
+              key={idx}
+              onClick={() => setActiveReviewIndex(idx)}
+              className={`relative rounded-full transition-all duration-300 shrink-0 ${
+                activeReviewIndex === idx
+                  ? 'ring-4 ring-signal-blue scale-110 shadow-md'
+                  : 'opacity-60 hover:opacity-100 hover:scale-105'
+              }`}
+              aria-label={`Voir l'avis de ${review.name}`}
+            >
+              <img
+                src={review.avatar}
+                alt={review.name}
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-white shadow-sm"
+              />
+            </button>
+          ))}
+        </div>
+
+        {/* Carte d'avis actif */}
+        <div className="bg-signal-card border border-signal-border rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-10 shadow-signal-card relative overflow-hidden transition-all duration-300">
+          <Quote className="w-10 h-10 sm:w-14 sm:h-14 text-signal-paper absolute top-4 right-4 sm:top-6 sm:right-6 pointer-events-none" />
+
+          <div className="flex items-center gap-1 text-amber-500 mb-3 sm:mb-4">
+            {[...Array(clientReviews[activeReviewIndex].rating)].map((_, i) => (
+              <Star key={i} className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-amber-500" />
+            ))}
+          </div>
+
+          <p className="text-xs sm:text-base md:text-lg text-signal-dark font-sans italic leading-relaxed mb-5 sm:mb-6">
+            « {clientReviews[activeReviewIndex].comment} »
+          </p>
+
+          <div className="flex items-center justify-between pt-4 sm:pt-5 border-t border-signal-border gap-2">
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <img
+                src={clientReviews[activeReviewIndex].avatar}
+                alt={clientReviews[activeReviewIndex].name}
+                className="w-9 h-9 sm:w-12 sm:h-12 rounded-full object-cover border border-signal-border shadow-sm shrink-0"
+              />
+              <div className="min-w-0">
+                <span className="font-bold text-xs sm:text-sm text-signal-dark block truncate">
+                  {clientReviews[activeReviewIndex].name}
+                </span>
+                <span className="text-[11px] sm:text-xs font-mono text-signal-muted block truncate">
+                  {clientReviews[activeReviewIndex].role} • {clientReviews[activeReviewIndex].company}
+                </span>
+              </div>
+            </div>
+
+            {/* Navigation boutons */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <button
+                onClick={() =>
+                  setActiveReviewIndex((prev) => (prev === 0 ? clientReviews.length - 1 : prev - 1))
+                }
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-signal-paper hover:bg-signal-dark hover:text-white flex items-center justify-center transition-colors"
+                aria-label="Avis précédent"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() =>
+                  setActiveReviewIndex((prev) => (prev === clientReviews.length - 1 ? 0 : prev + 1))
+                }
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-signal-paper hover:bg-signal-dark hover:text-white flex items-center justify-center transition-colors"
+                aria-label="Avis suivant"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION "ET LE VÔTRE ?" — Disposition exacte Aquidev (Grille 2 colonnes sur mobile) */}
+      <section className="section-reveal py-8 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+        <div className="bg-signal-dark text-white rounded-[2rem] sm:rounded-[3rem] p-5 sm:p-10 lg:p-14 relative overflow-hidden shadow-2xl">
+          <div className="max-w-2xl mx-auto text-center mb-6 sm:mb-10">
+            <h2 className="font-drama italic text-3xl sm:text-5xl md:text-6xl text-white leading-tight">
+              Et le <span className="font-drama italic underline decoration-signal-blue decoration-2 underline-offset-4">vôtre</span>&nbsp;?
+            </h2>
+            <p className="text-xs sm:text-base text-gray-300 font-sans leading-relaxed mt-2.5 sm:mt-3">
+              Quel type de projet souhaitez-vous concrétiser ? Sélectionnez une typologie ci-dessous pour lancer l'échange sur WhatsApp.
+            </p>
+          </div>
+
+          {/* Grille des services — 2 COLONNES SUR MOBILE (Disposition exacte capture Aquidev) */}
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 mb-6 sm:mb-8">
+            {serviceOptions.map((opt) => {
+              const IconComp = opt.icon;
+              const isSelected = selectedService === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => setSelectedService(opt.key)}
+                  className={`text-left p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all flex flex-col justify-between h-24 sm:h-28 active:scale-95 ${
+                    isSelected
+                      ? 'bg-signal-blue/25 border-signal-blue text-white shadow-signal-blue ring-2 ring-signal-blue/40'
+                      : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:border-white/20'
+                  }`}
+                >
+                  {/* Titre en haut à gauche */}
+                  <span className="font-bold text-sm sm:text-base text-white tracking-tight">
+                    {opt.shortTitle}
+                  </span>
+
+                  {/* Icône en bas à gauche */}
+                  <div className={`p-1.5 sm:p-2 rounded-xl w-fit ${isSelected ? 'bg-signal-blue text-white' : 'bg-white/10 text-gray-300'}`}>
+                    <IconComp className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* CTA Contextuel WhatsApp */}
+          <div className="p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] bg-white/5 border border-white/10 text-center max-w-xl mx-auto space-y-2.5 sm:space-y-3">
+            <span className="text-[11px] sm:text-xs font-mono text-signal-blueLight uppercase block">
+              // Projet sélectionné : <strong className="text-white">{currentService.title}</strong>
+            </span>
+            <button
+              onClick={() => openWhatsAppWith(currentService.whatsappText)}
+              className="btn-magnetic w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-semibold px-5 sm:px-6 py-3 sm:py-3.5 rounded-full text-xs sm:text-sm shadow-lg transition-all"
+            >
+              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>Démarrer ce projet sur WhatsApp</span>
+            </button>
+            <p className="text-[10px] sm:text-[11px] font-mono text-gray-400">
+              Disponible immédiatement • Réponse garantie sous 24h
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION FORMATIONS (Navigation #formations) */}
+      <section id="formations" className="section-reveal scroll-mt-24 sm:scroll-mt-28 py-8 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+        <div className="bg-signal-card border border-signal-border rounded-[2rem] sm:rounded-[3rem] p-4 sm:p-8 lg:p-12 shadow-signal-card">
+          <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-10">
+            <h2 className="font-drama italic text-3xl sm:text-5xl md:text-6xl text-signal-dark">
+              Formations
+            </h2>
+            <p className="text-xs sm:text-sm text-signal-muted mt-1.5 sm:mt-2 font-mono">
+              Parcours de formation et compétences linguistiques
+            </p>
+          </div>
+
+          <div className="space-y-4 sm:space-y-5">
+            {/* Licence Pro SIL 2026 */}
+            <div className="p-4 sm:p-6 lg:p-8 rounded-[1.5rem] sm:rounded-[2rem] bg-signal-paper border border-signal-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="p-3 rounded-2xl bg-signal-blue text-white shadow-signal-blue shrink-0">
+                  <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <div>
+                  <span className="font-mono text-xs text-signal-blue font-bold">2026</span>
+                  <h3 className="text-base sm:text-xl font-bold text-signal-dark mt-0.5">
+                    Licence Professionnelle en Informatique
+                  </h3>
+                  <p className="text-xs sm:text-sm font-mono text-signal-muted font-semibold">
+                    Spécialité Systèmes d’Information et Logiciels (SIL)
+                  </p>
+                  <p className="text-xs text-signal-muted mt-1 font-sans">
+                    ESCAE de Calavi, Bénin — Conception logicielle, bases relationnelles, architectures applicatives.
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex items-center text-[11px] sm:text-xs font-mono px-3.5 py-1 rounded-full bg-signal-dark text-white font-semibold self-start sm:self-auto shrink-0">
+                Diplômé 2026
+              </span>
+            </div>
+
+            {/* Baccalauréat 2021 */}
+            <div className="p-4 sm:p-6 lg:p-8 rounded-[1.5rem] sm:rounded-[2rem] bg-signal-paper border border-signal-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="p-3 rounded-2xl bg-signal-dark text-white shrink-0">
+                  <Award className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <div>
+                  <span className="font-mono text-xs text-signal-blue font-bold">2021</span>
+                  <h3 className="text-base sm:text-xl font-bold text-signal-dark mt-0.5">
+                    Baccalauréat Série B
+                  </h3>
+                  <p className="text-xs sm:text-sm font-mono text-signal-muted font-semibold">
+                    Mention Assez Bien
+                  </p>
+                  <p className="text-xs text-signal-muted mt-1 font-sans">
+                    Bases solides en mathématiques appliquées, raisonnement logique et sciences économiques.
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex items-center text-[11px] sm:text-xs font-mono px-3.5 py-1 rounded-full bg-white text-signal-dark border border-signal-border self-start sm:self-auto shrink-0">
+                Mention Assez Bien
+              </span>
+            </div>
+
+            {/* Langues & Football */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <div className="p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] bg-signal-paper border border-signal-border">
+                <h4 className="font-bold text-xs font-mono uppercase text-signal-dark mb-2.5">
+                  🌐 Langues
+                </h4>
+                <div className="space-y-2 text-xs font-mono">
+                  <div className="flex justify-between border-b border-signal-border/50 pb-1.5">
+                    <span>Français</span>
+                    <span className="text-signal-blue font-bold">Langue maternelle / Courant</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Anglais</span>
+                    <span className="text-signal-blue font-bold">Technique & Professionnel</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] bg-signal-paper border border-signal-border">
+                <h4 className="font-bold text-xs font-mono uppercase text-signal-dark mb-2.5">
+                  ⚽ Centre d’intérêt
+                </h4>
+                <p className="text-xs text-signal-muted leading-relaxed font-sans">
+                  Pratique active du football : esprit d’équipe, vision tactique collective et réactivité sous pression.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER STRICTEMENT CONFORME AU POINT 7 DU PROMPT */}
+      {/* "Afficher uniquement :
+          Farel Houssou — Tous droits réservés
+          GitHub : https://github.com/FarelHOUSSOU
+          Instagram : https://www.instagram.com/farelhoussou?obrf=MW1na3JkZ3d6eXFzNw%3D%3D&utm_source=qr
+          Aucun autre élément." */}
+      <footer className="bg-signal-dark text-signal-paper py-10 px-4 sm:px-6 lg:px-8 mt-12 rounded-t-[3rem] border-t border-signal-dark safe-pb-mobile">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left text-xs font-mono">
+          <div>
+            Farel Houssou — Tous droits réservés
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <a
+              href="https://github.com/FarelHOUSSOU"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-signal-blueLight transition-colors flex items-center gap-1.5"
+            >
+              <Github className="w-3.5 h-3.5" />
+              <span>GitHub : FarelHOUSSOU</span>
+            </a>
+            <a
+              href="https://www.instagram.com/farelhoussou?obrf=MW1na3JkZ3d6eXFzNw%3D%3D&utm_source=qr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-signal-blueLight transition-colors flex items-center gap-1.5"
+            >
+              <Instagram className="w-3.5 h-3.5" />
+              <span>Instagram : farelhoussou</span>
+            </a>
+          </div>
+        </div>
+      </footer>
+
+      {/* MODAL / INTERFACE ANIMÉE WHATSAPP (Consigne 2 & 8) — Responsive, accessible sur mobile */}
+      {whatsAppModalOpen && (
+        <div
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-signal-dark/60 backdrop-blur-md animate-fadeIn"
+          onClick={() => setWhatsAppModalOpen(false)}
+        >
+          <div
+            className="bg-signal-card border border-signal-border rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 max-w-md w-full shadow-2xl relative max-h-[88dvh] overflow-y-auto animate-scaleUp text-left my-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setWhatsAppModalOpen(false)}
+              className="absolute top-4 right-4 sm:top-5 sm:right-5 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-signal-paper hover:bg-signal-dark hover:text-white flex items-center justify-center transition-colors z-10"
+              aria-label="Fermer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Header Modal */}
+            <div className="flex items-center gap-3 sm:gap-3.5 mb-4 sm:mb-5 pr-8">
+              <div className="relative">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-signal-dark text-signal-bg flex items-center justify-center font-mono font-bold text-xs shrink-0">
+                  FH
+                </div>
+                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm sm:text-base text-signal-dark">
+                  Farel HOUSSOU
+                </h3>
+                <span className="text-xs font-mono text-emerald-600 flex items-center gap-1">
+                  En ligne • WhatsApp direct
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-signal-muted leading-relaxed font-sans mb-3 sm:mb-4">
+              Discutez directement avec Farel sur WhatsApp avec votre besoin prérempli.
+            </p>
+
+            {/* Message preview box */}
+            <div className="p-3 sm:p-3.5 rounded-2xl bg-signal-paper border border-signal-border font-mono text-xs text-signal-dark mb-4 sm:mb-5">
+              <span className="text-[10px] uppercase text-signal-muted block mb-1 font-bold">
+                // Message prérempli :
+              </span>
+              « {whatsAppMessage} »
+            </div>
+
+            {/* Action */}
+            <div className="space-y-2">
+              <a
+                href={getWhatsAppLink(whatsAppMessage)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setWhatsAppModalOpen(false)}
+                className="btn-magnetic w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-semibold py-3 px-4 rounded-xl text-xs shadow-md transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>M’écrire sur WhatsApp</span>
+              </a>
+
+              <button
+                onClick={() => setWhatsAppModalOpen(false)}
+                className="w-full py-2 text-xs font-mono text-signal-muted hover:text-signal-dark transition-colors"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
