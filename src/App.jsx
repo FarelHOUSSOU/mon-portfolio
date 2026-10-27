@@ -620,7 +620,7 @@ export default function App() {
                 >
                   <img
                     src={currentProject.image}
-                    alt={currentProject.title}
+                    alt={`Aperçu du projet ${currentProject.title} — ${currentProject.subtitle}`}
                     className="w-full h-auto object-cover transform transition-transform duration-700 group-hover/image:scale-102"
                     loading="lazy"
                   />
@@ -827,7 +827,7 @@ export default function App() {
             <div className="my-4 sm:my-6 rounded-2xl overflow-hidden border border-signal-border bg-signal-paper">
               <img
                 src={activeProjectDetail.image}
-                alt={activeProjectDetail.title}
+                alt={`Capture d'écran détaillée du projet ${activeProjectDetail.title} — ${activeProjectDetail.subtitle}`}
                 className="w-full h-auto object-cover max-h-52 sm:max-h-60"
               />
             </div>
@@ -1208,7 +1208,7 @@ export default function App() {
             >
               <img
                 src={review.avatar}
-                alt={review.name}
+                alt={`Photo de profil de ${review.name}, ${review.role} chez ${review.company}`}
                 className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-white shadow-sm"
               />
             </button>
@@ -1233,7 +1233,7 @@ export default function App() {
             <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
               <img
                 src={clientReviews[activeReviewIndex].avatar}
-                alt={clientReviews[activeReviewIndex].name}
+                alt={`Portrait de ${clientReviews[activeReviewIndex].name}`}
                 className="w-9 h-9 sm:w-12 sm:h-12 rounded-full object-cover border border-signal-border shadow-sm shrink-0"
               />
               <div className="min-w-0">
